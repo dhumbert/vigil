@@ -130,7 +130,7 @@ def upgrade():
 
     emotions_group_id = connection.execute(question_groups.insert().values(name="Emotions")).inserted_primary_key[0]
     q_order = 0
-    for emotion_question in ['Anger', 'Sadness', 'Depression', 'Joy', 'Optimism', 'Pessimism', 'Hopelessness', 'Jealousy', 'Apathy', 'Nostalgia', 'Loneliness']:
+    for emotion_question in ['Anger', 'Sadness', 'Depression', 'Joy', 'Optimism', 'Pessimism', 'Hopelessness', 'Frustrated', 'Jealousy', 'Apathy', 'Nostalgia', 'Loneliness']:
         q_id = connection.execute(questions.insert().values(order=q_order, question_group_id=emotions_group_id, prompt=emotion_question)).inserted_primary_key[0]
         for yes_no_opt in yes_no_opts:
             connection.execute(question_answers.insert().values(question_id=q_id, order=yes_no_opt[2], text=yes_no_opt[1], value=yes_no_opt[0]))
