@@ -14,10 +14,19 @@
             </ul>
         </nav>
 
+        <h2>Summary</h2>
+        <ul>
+            {% for summary_element in summary %}
+                <li class="summary-status-{{ summary_element.status }}">
+                    {{ summary_element.name }}: <strong>{{ summary_element.description }}</strong>
+                </li>
+            {% endfor %}
+        </ul>
+
         {% for group in groups %}
             <div class="row answered-question-group">
                 <div class="col-xs-12">
-                    <h2>{{ group.name }}</h2>
+                    <h3>{{ group.name }}</h3>
 
                     <table class="table table-condensed">
                         {% for question in group.ordered_questions %}

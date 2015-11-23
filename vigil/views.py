@@ -8,7 +8,7 @@ from vigil import app, model, utils
 @login_required
 def index():
     today = datetime.now().strftime(app.config['DATE_FORMAT'])
-    return redirect(url_for('day_view', day=today, edit='true'))
+    return redirect(url_for('day_view', day=today))
 
 
 @app.route("/day/<day>", methods=['GET', 'POST'])
@@ -24,6 +24,7 @@ def day_view(day):
     user_answers = model.get_answers(current_user, day_datetime)
     groups = model.QuestionGroup.query.all()
     prev_day, next_day = utils.bracketing_days(day_datetime)
+    summary = model.generate_summary(groups, user_answers)
 
     edit = False
     if ('edit' in request.args and request.args['edit'] == 'true') or not user_answers:
@@ -32,6 +33,7 @@ def day_view(day):
     template = 'edit.html' if edit else 'view.html'
 
     return render_template(template, groups=groups, day=day_datetime, user_answers=user_answers,
+                           summary=summary,
                            prev_day=prev_day, next_day=next_day)
 
 

@@ -108,3 +108,47 @@ def get_answers(user, day_datetime):
     answers = UserAnswer.query.filter_by(date=day_datetime, user_id=user.id)
 
     return {a.question_id: a for a in answers}
+
+
+class SummaryElement:
+    status = 'neutral'  # good, neutral, warning, bad
+    name = ''
+    description = ''
+
+
+def generate_summary(groups, user_answers):
+    # todo save summary into database?
+    # right now we only have burns
+    burns_group_questions = map(lambda q: q.id, filter(lambda x: x.name == "Burn's Depression Checklist", groups)[0].questions)
+
+    score = 0
+    for user_answer in user_answers:
+        if user_answers[user_answer].question_id in burns_group_questions:
+            score += user_answers[user_answer].answer.value
+
+    burns_summary_element = SummaryElement()
+
+    if score <= 5:
+        description = "No depression"
+        status = "good"
+    elif score <=10:
+        description = "Normal but unhappy"
+        status = "warning"
+    elif score <= 25:
+        description = "Mild depression"
+        status = "warning"
+    elif score <= 50:
+        description = "Moderate depression"
+        status = "bad"
+    elif score <= 75:
+        description = "Severe depression"
+        status = "bad"
+    else:
+        description = "Extreme depression"
+        status = "bad"
+
+    burns_summary_element.name = "Burn's Depression Checklist Score"
+    burns_summary_element.status = status
+    burns_summary_element.description = description + " (" + str(score) + ")"
+
+    return [burns_summary_element]
