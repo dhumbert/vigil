@@ -14,6 +14,10 @@ class QuestionGroup(db.Model):
     def active_questions(self):
         return SessionBase.object_session(self).query(Question).with_parent(self).filter(Question.active==True).order_by(Question.order).all()
 
+    @property
+    def ordered_questions(self):
+        return SessionBase.object_session(self).query(Question).with_parent(self).order_by(Question.order).all()
+
 
 class Question(db.Model):
     __tablename__ = 'questions'
@@ -103,4 +107,4 @@ def save_answers(user, date, answers):
 def get_answers(user, day_datetime):
     answers = UserAnswer.query.filter_by(date=day_datetime, user_id=user.id)
 
-    return {a.question_id: a.question_answer_id for a in answers}
+    return {a.question_id: a for a in answers}

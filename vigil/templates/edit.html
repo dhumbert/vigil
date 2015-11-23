@@ -5,15 +5,15 @@
     <form method="post" class="form-horizontal">
         {% include "messages.html" %}
 
-        <h1>Questions for {{ day.strftime("%A %d %b %Y") }}</h1>
+        <h1 class="text-center">Questions for {{ day.strftime("%A %d %b %Y") }}</h1>
         {% if user_answers %}
             <div class="alert alert-info"><strong>Psst...</strong> You have already saved answers for this day.</div>
         {% endif %}
 
         <nav>
             <ul class="pager">
-                <li class="previous"><a href="{{ url_for('view', day=prev_day) }}"><span aria-hidden="true">&larr;</span> Older</a></li>
-                <li class="next"><a href="{{ url_for('view', day=next_day) }}">Newer <span aria-hidden="true">&rarr;</span></a></li>
+                <li class="previous"><a href="{{ url_for('day_view', day=prev_day) }}"><span aria-hidden="true">&larr;</span> Older</a></li>
+                <li class="next"><a href="{{ url_for('day_view', day=next_day) }}">Newer <span aria-hidden="true">&rarr;</span></a></li>
             </ul>
         </nav>
 
@@ -31,7 +31,7 @@
                     <div class="col-sm-6">
                         <select class="form-control" id="question_{{ question.id }}" name="question_{{ question.id }}">
                             {% for answer in question.ordered_answers %}
-                                <option value="{{ answer.id }}" {% if question.id in user_answers and user_answers[question.id] == answer.id %}selected="selected"{% endif %}>
+                                <option value="{{ answer.id }}" {% if question.id in user_answers and user_answers[question.id].question_answer_id == answer.id %}selected="selected"{% endif %}>
                                     {{ answer.text }}
                                 </option>
                             {% endfor %}

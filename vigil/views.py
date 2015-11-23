@@ -8,29 +8,30 @@ from vigil import app, model, utils
 @login_required
 def index():
     today = datetime.now().strftime(app.config['DATE_FORMAT'])
-    return redirect(url_for('edit', day=today))
+    return redirect(url_for('day_view', day=today, edit='true'))
 
 
-@app.route("/view/<day>", methods=['GET', 'POST'])
+@app.route("/day/<day>", methods=['GET', 'POST'])
 @login_required
-def view(day):
-    pass
-
-
-@app.route("/edit/<day>", methods=['GET', 'POST'])
-@login_required
-def edit(day):
+def day_view(day):
     day_datetime = datetime.strptime(day, app.config['DATE_FORMAT'])
     if request.method == 'POST':
         answers = [(x.replace('question_', ''), request.form[x],) for x in request.form if x[0:8] =='question']
         model.save_answers(current_user, day_datetime, answers)
         flash('success', 'Saved!')
-        return redirect(url_for('edit', day=day))
+        return redirect(url_for('day_view', day=day))
 
     user_answers = model.get_answers(current_user, day_datetime)
     groups = model.QuestionGroup.query.all()
     prev_day, next_day = utils.bracketing_days(day_datetime)
-    return render_template('edit.html', groups=groups, day=day_datetime, user_answers=user_answers,
+
+    edit = False
+    if ('edit' in request.args and request.args['edit'] == 'true') or not user_answers:
+        edit = True
+
+    template = 'edit.html' if edit else 'view.html'
+
+    return render_template(template, groups=groups, day=day_datetime, user_answers=user_answers,
                            prev_day=prev_day, next_day=next_day)
 
 
