@@ -1,0 +1,5 @@
+.idea
+*.pyc
+*.db
+instance/application.cfg
+.DS_Store
