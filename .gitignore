@@ -3,3 +3,5 @@
 *.db
 instance/application.cfg
 .DS_Store
+venv
+*.log
