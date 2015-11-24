@@ -5,11 +5,14 @@
 <form method="post" class="form-horizontal">
     {% include "messages.html" %}
 
+    {% include "reports/burns.html" %}
+
     <h1 class="text-center">Questions for {{ day.strftime("%A %d %b %Y") }}</h1>
 
     <nav>
         <ul class="pager">
             <li class="previous"><a href="{{ url_for('day_view', day=prev_day) }}"><span aria-hidden="true">&larr;</span> Older</a></li>
+            <li><a class="btn" href="?edit=true">Edit</a></li>
             <li class="next"><a href="{{ url_for('day_view', day=next_day) }}">Newer <span aria-hidden="true">&rarr;</span></a></li>
         </ul>
     </nav>

@@ -1,4 +1,5 @@
-from flask import Flask
+from functools import wraps
+from flask import Flask, make_response
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -19,6 +20,18 @@ login.login_view = "login"
 def load_user(id):
     from vigil.model import User
     return User.query.get(int(id))
+
+
+def content_type(content_type):
+    """Adds Content-type header to requests"""
+    def decorator(func):
+        @wraps(func)
+        def do_output(*args, **kwargs):
+            response = make_response(func(*args, **kwargs))
+            response.headers['Content-type'] = content_type
+            return response
+        return do_output
+    return decorator
 
 
 import views

@@ -1,0 +1,10 @@
+<script>
+    var ajaxUrls = {
+        burns: "{{ url_for('ajax_burns') }}"
+    };
+</script>
+<script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/Chart.Scatter.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+
+<canvas id="burns" width="400" height="100"></canvas>

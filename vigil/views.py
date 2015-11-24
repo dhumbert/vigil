@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from flask import flash, render_template, request, redirect, url_for
 from flask.ext.login import current_user, login_required, login_user, logout_user
-from vigil import app, model, utils
+import json
+from vigil import app, model, utils, content_type
 
 
 @app.route("/")
@@ -33,14 +34,15 @@ def day_view(day):
     template = 'edit.html' if edit else 'view.html'
 
     return render_template(template, groups=groups, day=day_datetime, user_answers=user_answers,
-                           burns_score = burns_score,
+                           burns_score=burns_score,
                            prev_day=prev_day, next_day=next_day)
 
 
-@app.route("/logout")
+@app.route("/ajax/burns")
 @login_required
-def report():
-    pass
+@content_type("application/json")
+def ajax_burns():
+    return json.dumps(model.get_all_burns_scores(current_user))
 
 
 @app.route("/login", methods=['GET', 'POST'])

@@ -1,4 +1,6 @@
 from flask.ext.sqlalchemy import SessionBase
+import time
+
 from vigil import db, crypt
 
 
@@ -86,13 +88,11 @@ class UserAnswer(db.Model):
 class UserBurnsScore(db.Model):
     __tablename__ = 'user_burns_score'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    date = db.Column(db.DateTime)
+    date = db.Column(db.DateTime, primary_key=True)
     burns_score = db.Column(db.Integer)
-    user = db.relationship('User', backref=db.backref('burns_score'))
+    user = db.relationship('User')
 
     def for_display(self):
-        status = ""
-        description = ""
         if self.burns_score <= 5:
             status = "success"
             description = "No depression"
@@ -125,11 +125,7 @@ def authenticate(username, password):
 
 def save_answers(user, date, answers):
     # delete existing
-    existing = UserAnswer.query.filter_by(date=date, user_id=user.id).all()
-    for existing_answer in existing:
-        db.session.delete(existing_answer)
-
-    db.session.commit()
+    UserAnswer.query.filter_by(date=date, user_id=user.id).delete()
 
     for question_id, answer_id in answers:
         user_answer = UserAnswer()
@@ -154,6 +150,14 @@ def get_burns_score(user, day_datetime):
     return UserBurnsScore.query.filter_by(date=day_datetime, user_id=user.id).first()
 
 
+def get_all_burns_scores(user):
+    scores = []
+    for score in UserBurnsScore.query.filter_by(user_id=user.id).order_by(UserBurnsScore.date).all():
+        scores.append({'x': int(time.mktime(score.date.timetuple())) * 1000, 'y': score.burns_score})
+
+    return scores
+
+
 def save_burns_score(user, date):
     questions = QuestionGroup.query.filter(QuestionGroup.name == "Burn's Depression Checklist").first().questions
 
@@ -163,11 +167,7 @@ def save_burns_score(user, date):
         if user_answer:
             score += user_answer.answer.value
 
-    existing = UserBurnsScore.query.filter_by(date=date, user_id=user.id).first()
-
-    if existing:
-        db.session.delete(existing)
-        db.session.commit()
+    UserBurnsScore.query.filter_by(date=date, user_id=user.id).delete()
 
     user_score = UserBurnsScore()
     user_score.user = user

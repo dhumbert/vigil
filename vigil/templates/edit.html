@@ -13,6 +13,7 @@
         <nav>
             <ul class="pager">
                 <li class="previous"><a href="{{ url_for('day_view', day=prev_day) }}"><span aria-hidden="true">&larr;</span> Older</a></li>
+                {% if user_answers %}<li><a class="btn" href="?edit=false">Cancel Edit</a></li>{% endif %}
                 <li class="next"><a href="{{ url_for('day_view', day=next_day) }}">Newer <span aria-hidden="true">&rarr;</span></a></li>
             </ul>
         </nav>
