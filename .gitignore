@@ -5,3 +5,4 @@ instance/application.cfg
 .DS_Store
 venv
 *.log
+vigil-gunicorn.sh
