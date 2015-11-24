@@ -2,44 +2,41 @@
 
 {% block content %}
 
-    <form method="post" class="form-horizontal">
-        {% include "messages.html" %}
+<form method="post" class="form-horizontal">
+    {% include "messages.html" %}
 
-        <h1 class="text-center">Questions for {{ day.strftime("%A %d %b %Y") }}</h1>
+    <h1 class="text-center">Questions for {{ day.strftime("%A %d %b %Y") }}</h1>
 
-        <nav>
-            <ul class="pager">
-                <li class="previous"><a href="{{ url_for('day_view', day=prev_day) }}"><span aria-hidden="true">&larr;</span> Older</a></li>
-                <li class="next"><a href="{{ url_for('day_view', day=next_day) }}">Newer <span aria-hidden="true">&rarr;</span></a></li>
-            </ul>
-        </nav>
-
-        <h2>Summary</h2>
-        <ul>
-            {% for summary_element in summary %}
-                <li class="summary-status-{{ summary_element.status }}">
-                    {{ summary_element.name }}: <strong>{{ summary_element.description }}</strong>
-                </li>
-            {% endfor %}
+    <nav>
+        <ul class="pager">
+            <li class="previous"><a href="{{ url_for('day_view', day=prev_day) }}"><span aria-hidden="true">&larr;</span> Older</a></li>
+            <li class="next"><a href="{{ url_for('day_view', day=next_day) }}">Newer <span aria-hidden="true">&rarr;</span></a></li>
         </ul>
+    </nav>
 
-        {% for group in groups %}
-            <div class="row answered-question-group">
-                <div class="col-xs-12">
-                    <h3>{{ group.name }}</h3>
+    {% if burns_score %}
+        <div class="alert alert-{{ burns_score.for_display().status }}">
+            Burns Score: {{ burns_score.burns_score }} - {{ burns_score.for_display().description }}
+        </div>
+    {% endif %}
 
-                    <table class="table table-condensed">
-                        {% for question in group.ordered_questions %}
-                            {% if question.id in user_answers %}
-                                <tr>
-                                    <td>{{ question.prompt }}</td>
-                                    <td align="right">{{ user_answers[question.id].answer.text }}</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
-                    </table>
-                </div>
+    {% for group in groups %}
+        <div class="row answered-question-group">
+            <div class="col-xs-12">
+                <h3>{{ group.name }}</h3>
+
+                <table class="table table-condensed">
+                    {% for question in group.ordered_questions %}
+                        {% if question.id in user_answers %}
+                            <tr>
+                                <td>{{ question.prompt }}</td>
+                                <td align="right">{{ user_answers[question.id].answer.text }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
             </div>
-        {% endfor %}
+        </div>
+    {% endfor %}
 
 {% endblock %}

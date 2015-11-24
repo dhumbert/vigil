@@ -72,12 +72,47 @@ class UserAnswer(db.Model):
     __tablename__ = 'user_answers'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), primary_key=True)
-    question_answer_id = db.Column(db.Integer, db.ForeignKey('question_answers.id'), primary_key=True)
+    question_answer_id = db.Column(db.Integer, db.ForeignKey('question_answers.id'))
     date = db.Column(db.DateTime)
 
     user = db.relationship('User', backref=db.backref('answers'))
     question = db.relationship('Question')
     answer = db.relationship('Answer')
+
+    def __repr__(self):
+        return self.date.strftime("%Y-%m-%d") + " - " + str(self.question_id)
+
+
+class UserBurnsScore(db.Model):
+    __tablename__ = 'user_burns_score'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    date = db.Column(db.DateTime)
+    burns_score = db.Column(db.Integer)
+    user = db.relationship('User', backref=db.backref('burns_score'))
+
+    def for_display(self):
+        status = ""
+        description = ""
+        if self.burns_score <= 5:
+            status = "success"
+            description = "No depression"
+        elif self.burns_score <= 10:
+            status = "warning"
+            description = "Normal but unhappy"
+        elif self.burns_score <= 25:
+            status = "warning"
+            description = "Mild depression"
+        elif self.burns_score <= 50:
+            status = "danger"
+            description = "Moderate depression"
+        elif self.burns_score <= 75:
+            status = "danger"
+            description = "Severe depression"
+        else:
+            status = "danger"
+            description = "Extreme depression"
+
+        return {"status": status, "description": description}
 
 
 def authenticate(username, password):
@@ -89,19 +124,24 @@ def authenticate(username, password):
 
 
 def save_answers(user, date, answers):
-    for question_id, answer_id in answers:
-        existing = UserAnswer.query.filter_by(date=date, user_id=user.id, question_id=question_id).first()
-        if existing:
-            existing.question_answer_id = answer_id  # in case answer changed
-        else:
-            user_answer = UserAnswer()
-            user_answer.user = user
-            user_answer.question_id = question_id
-            user_answer.question_answer_id = answer_id
-            user_answer.date = date
-            db.session.add(user_answer)
+    # delete existing
+    existing = UserAnswer.query.filter_by(date=date, user_id=user.id).all()
+    for existing_answer in existing:
+        db.session.delete(existing_answer)
 
     db.session.commit()
+
+    for question_id, answer_id in answers:
+        user_answer = UserAnswer()
+        user_answer.user = user
+        user_answer.question_id = question_id
+        user_answer.question_answer_id = answer_id
+        user_answer.date = date
+        db.session.add(user_answer)
+
+    db.session.commit()
+
+    save_burns_score(user, date)
 
 
 def get_answers(user, day_datetime):
@@ -110,45 +150,29 @@ def get_answers(user, day_datetime):
     return {a.question_id: a for a in answers}
 
 
-class SummaryElement:
-    status = 'neutral'  # good, neutral, warning, bad
-    name = ''
-    description = ''
+def get_burns_score(user, day_datetime):
+    return UserBurnsScore.query.filter_by(date=day_datetime, user_id=user.id).first()
 
 
-def generate_summary(groups, user_answers):
-    # todo save summary into database?
-    # right now we only have burns
-    burns_group_questions = map(lambda q: q.id, filter(lambda x: x.name == "Burn's Depression Checklist", groups)[0].questions)
+def save_burns_score(user, date):
+    questions = QuestionGroup.query.filter(QuestionGroup.name == "Burn's Depression Checklist").first().questions
 
     score = 0
-    for user_answer in user_answers:
-        if user_answers[user_answer].question_id in burns_group_questions:
-            score += user_answers[user_answer].answer.value
+    for question in questions:
+        user_answer = UserAnswer.query.filter(UserAnswer.question_id==question.id, UserAnswer.date==date).first()
+        if user_answer:
+            score += user_answer.answer.value
 
-    burns_summary_element = SummaryElement()
+    existing = UserBurnsScore.query.filter_by(date=date, user_id=user.id).first()
 
-    if score <= 5:
-        description = "No depression"
-        status = "good"
-    elif score <=10:
-        description = "Normal but unhappy"
-        status = "warning"
-    elif score <= 25:
-        description = "Mild depression"
-        status = "warning"
-    elif score <= 50:
-        description = "Moderate depression"
-        status = "bad"
-    elif score <= 75:
-        description = "Severe depression"
-        status = "bad"
-    else:
-        description = "Extreme depression"
-        status = "bad"
+    if existing:
+        db.session.delete(existing)
+        db.session.commit()
 
-    burns_summary_element.name = "Burn's Depression Checklist Score"
-    burns_summary_element.status = status
-    burns_summary_element.description = description + " (" + str(score) + ")"
+    user_score = UserBurnsScore()
+    user_score.user = user
+    user_score.burns_score = score
+    user_score.date = date
+    db.session.add(user_score)
 
-    return [burns_summary_element]
+    db.session.commit()

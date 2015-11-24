@@ -22,9 +22,9 @@ def day_view(day):
         return redirect(url_for('day_view', day=day))
 
     user_answers = model.get_answers(current_user, day_datetime)
+    burns_score = model.get_burns_score(current_user, day_datetime)
     groups = model.QuestionGroup.query.all()
     prev_day, next_day = utils.bracketing_days(day_datetime)
-    summary = model.generate_summary(groups, user_answers)
 
     edit = False
     if ('edit' in request.args and request.args['edit'] == 'true') or not user_answers:
@@ -33,8 +33,14 @@ def day_view(day):
     template = 'edit.html' if edit else 'view.html'
 
     return render_template(template, groups=groups, day=day_datetime, user_answers=user_answers,
-                           summary=summary,
+                           burns_score = burns_score,
                            prev_day=prev_day, next_day=next_day)
+
+
+@app.route("/logout")
+@login_required
+def report():
+    pass
 
 
 @app.route("/login", methods=['GET', 'POST'])
