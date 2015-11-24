@@ -41,7 +41,6 @@ $(document).ready(function(){
                 var point = this.datasets[0].points[0];//[this.options.lineAtIndex];
                 //console.log(point);
                 var scale = this.scale;
-                console.log(this.scale.xScaleRange.min);
 
                 //var unitY = this.datasets[0].points[1].y - this.datasets[0].points[0].y;
                 //console.log(unitY);
@@ -49,13 +48,20 @@ $(document).ready(function(){
                 //var yHeight = this.scale.endPoint - this.scale.startPoint;
                 var xStart = this.datasets[0].points[0].x;
                 var xEnd = this.chart.width;
-                var yUnit = this.scale.yScaleRange.stepValue;
-                var yMax = this.scale.yScaleRange.max;
-                var goodThreshold = 5;
+                //var yUnit = this.scale.yScaleRange.stepValue;
+                //var yMax = this.scale.yScaleRange.max;
+                //var goodThreshold = 5;
+                //
+                //this.chart.ctx.fillStyle = 'rgba(0,255,0,0.1)';
+                //this.chart.ctx.fillRect(this.datasets[0].points[0].x, (yMax - goodThreshold) * yUnit, xEnd, -5.5 * yUnit);
 
-                this.chart.ctx.fillStyle = 'rgba(0,255,0,0.1)';
-                this.chart.ctx.fillRect(this.datasets[0].points[0].x, (yMax - goodThreshold) * yUnit, xEnd, -5.5 * yUnit);
-
+                // draw line
+                var yLine = this.scale.calculateY(6); // above 5 is not good
+                this.chart.ctx.beginPath();
+                this.chart.ctx.moveTo(xStart, yLine);
+                this.chart.ctx.strokeStyle = '#fc9d94';
+                this.chart.ctx.lineTo(xEnd, yLine);
+                this.chart.ctx.stroke();
 
                 //// write TODAY
                 // this.chart.ctx.fillStyle = 'rgba(0,255,0,1)';
