@@ -24,7 +24,7 @@ def day_view(day):
 
     user_answers = model.get_answers(current_user, day_datetime)
     burns_score = model.get_burns_score(current_user, day_datetime)
-    groups = model.QuestionGroup.query.all()
+    groups = model.get_users_question_groups(current_user)
     prev_day, next_day = utils.bracketing_days(day_datetime)
 
     edit = False

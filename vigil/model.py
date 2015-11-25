@@ -1,4 +1,5 @@
 from flask.ext.sqlalchemy import SessionBase
+from sqlalchemy import or_, and_, desc, asc
 import time
 
 from vigil import db, crypt
@@ -9,8 +10,11 @@ class QuestionGroup(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    order = db.Column(db.Integer)
 
     questions = db.relationship('Question', backref=db.backref('group'))
+    user = db.relationship('User', backref=db.backref('question_groups'))
 
     @property
     def active_questions(self):
@@ -121,6 +125,11 @@ def authenticate(username, password):
         return user
 
     return None
+
+
+def get_users_question_groups(user):
+    group_filter = or_(QuestionGroup.user_id == None, QuestionGroup.user_id == user.id)
+    return QuestionGroup.query.filter(group_filter).order_by(QuestionGroup.order).all()
 
 
 def save_answers(user, date, answers):
