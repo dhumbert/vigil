@@ -38,6 +38,13 @@ $(document).ready(function(){
             draw: function () {
                 Chart.types.Scatter.prototype.draw.apply(this, arguments);
 
+                // color bigger points a different color (this should be today)
+                for (var i = 0; i < this.datasets[0].points.length; i++) {
+                    if (this.datasets[0].points[i].size > 1) {
+                        this.datasets[0].points[i].fillColor = "lightblue";
+                    }
+                }
+
                 var point = this.datasets[0].points[0];//[this.options.lineAtIndex];
                 //console.log(point);
                 var scale = this.scale;

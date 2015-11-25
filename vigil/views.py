@@ -34,7 +34,7 @@ def day_view(day):
     template = 'edit.html' if edit else 'view.html'
 
     return render_template(template, groups=groups, day=day_datetime, user_answers=user_answers,
-                           burns_score=burns_score,
+                           burns_score=burns_score, day_raw=day,
                            prev_day=prev_day, next_day=next_day)
 
 
@@ -42,7 +42,13 @@ def day_view(day):
 @login_required
 @content_type("application/json")
 def ajax_burns():
-    return json.dumps(model.get_all_burns_scores(current_user))
+    current_date = request.args.get('date', None)
+    if current_date:
+        current_date_datetime = datetime.strptime(current_date, app.config['DATE_FORMAT'])
+    else:
+        current_date_datetime = datetime.now()
+
+    return json.dumps(model.get_all_burns_scores(current_user, current_date_datetime))
 
 
 @app.route("/login", methods=['GET', 'POST'])

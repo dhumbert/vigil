@@ -150,10 +150,13 @@ def get_burns_score(user, day_datetime):
     return UserBurnsScore.query.filter_by(date=day_datetime, user_id=user.id).first()
 
 
-def get_all_burns_scores(user):
+def get_all_burns_scores(user, current_date):
     scores = []
     for score in UserBurnsScore.query.filter_by(user_id=user.id).order_by(UserBurnsScore.date).all():
-        scores.append({'x': int(time.mktime(score.date.timetuple())) * 1000, 'y': score.burns_score})
+        val = {'x': int(time.mktime(score.date.timetuple())) * 1000, 'y': score.burns_score}
+        if score.date.date() == current_date.date():
+            val['r'] = 1.5  # make this date bigger
+        scores.append(val)
 
     return scores
 

@@ -1,6 +1,6 @@
 <script>
     var ajaxUrls = {
-        burns: "{{ url_for('ajax_burns') }}"
+        burns: "{{ url_for('ajax_burns', date=day_raw) }}"
     };
 </script>
 <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>

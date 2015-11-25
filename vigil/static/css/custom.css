@@ -1,7 +1,11 @@
 /* Space out content a bit */
 body {
-  padding-top: 20px;
   padding-bottom: 20px;
+}
+
+h1 {
+  color: #aaa;
+  font-size: 2em;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
