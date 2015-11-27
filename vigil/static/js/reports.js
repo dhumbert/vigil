@@ -1,7 +1,7 @@
 $(document).ready(function(){
-    var ctx = $('#burns').get(0).getContext("2d");
+    var ctx = $('#top-graph').get(0).getContext("2d");
 
-    $.get(ajaxUrls['burns'], function(data) {
+    $.get(ajaxUrls['top_graph'], function(graph_data) {
         var data = {
             datasets: [
                 {
@@ -12,7 +12,7 @@ $(document).ready(function(){
                     pointStrokeColor: "#fff",
                     pointHighlightFill: "#fff",
                     pointHighlightStroke: "rgba(220,220,220,1)",
-                    data: data
+                    data: graph_data.burns
                 }
                 //,
                 //{
@@ -30,6 +30,23 @@ $(document).ready(function(){
             ]
         };
 
+        for (var k in graph_data.other) {
+            if (graph_data.other.hasOwnProperty(k)) {
+                data.datasets.push({
+                    label: k,
+                    data: graph_data.other[k].data,
+                    fillColor: "rgba(" + graph_data.other[k].color.red + "," + graph_data.other[k].color.green + "," + graph_data.other[k].color.blue + ",0.2)",
+                    strokeColor: "rgba(" + graph_data.other[k].color.red + "," + graph_data.other[k].color.green + "," + graph_data.other[k].color.blue + ",1)",
+                    pointColor: "rgba(" + graph_data.other[k].color.red + "," + graph_data.other[k].color.green + "," + graph_data.other[k].color.blue + ",1)",
+                    pointStrokeColor: "#fff",
+                    pointHighlightFill: "#fff",
+                    pointHighlightStroke: "rgba(" + graph_data.other[k].color.red + "," + graph_data.other[k].color.green + "," + graph_data.other[k].color.blue + ",1)"
+                });
+            }
+        }
+
+        console.log(data.datasets);
+
         Chart.types.Scatter.extend({
             name: "ScatterWithLines",
             initialize: function () {
@@ -37,13 +54,6 @@ $(document).ready(function(){
             },
             draw: function () {
                 Chart.types.Scatter.prototype.draw.apply(this, arguments);
-
-                // color bigger points a different color (this should be today)
-                for (var i = 0; i < this.datasets[0].points.length; i++) {
-                    if (this.datasets[0].points[i].size > 1) {
-                        this.datasets[0].points[i].fillColor = "lightblue";
-                    }
-                }
 
                 var point = this.datasets[0].points[0];//[this.options.lineAtIndex];
                 //console.log(point);
@@ -62,13 +72,22 @@ $(document).ready(function(){
                 //this.chart.ctx.fillStyle = 'rgba(0,255,0,0.1)';
                 //this.chart.ctx.fillRect(this.datasets[0].points[0].x, (yMax - goodThreshold) * yUnit, xEnd, -5.5 * yUnit);
 
-                // draw line
+                // draw line at "good" cutoff
                 var yLine = this.scale.calculateY(6); // above 5 is not good
                 this.chart.ctx.beginPath();
                 this.chart.ctx.moveTo(xStart, yLine);
                 this.chart.ctx.strokeStyle = '#fc9d94';
                 this.chart.ctx.lineTo(xEnd, yLine);
                 this.chart.ctx.stroke();
+
+                // draw line at 0
+                var yLineZero = this.scale.calculateY(0);
+                this.chart.ctx.beginPath();
+                this.chart.ctx.moveTo(xStart, yLineZero);
+                this.chart.ctx.strokeStyle = '#ccc';
+                this.chart.ctx.lineTo(xEnd, yLineZero);
+                this.chart.ctx.stroke();
+
 
                 //// write TODAY
                 // this.chart.ctx.fillStyle = 'rgba(0,255,0,1)';
@@ -78,13 +97,23 @@ $(document).ready(function(){
         });
 
 
-        var myNewChart = new Chart(ctx).ScatterWithLines(data, {
+        var topChart = new Chart(ctx).ScatterWithLines(data, {
             scaleType: "date",
             useUtc: false,
             showScale: false,
             scaleShowGridLines: false,
 			responsive: true,
             scaleDateTimeFormat: "ddd d mmm"
+            //legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><%for(var i=0;i<datasets.length;i++){%><li><span class=\"<%=name.toLowerCase()%>-legend-marker\" style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%=datasets[i].label%></li><%}%></ul>"
 		});
+
+        var legend = topChart.generateLegend();
+        $('#top-graph-legend').append(legend);
+
+        $('#top-graph').hover(function(){
+            $('#top-graph-legend').slideDown();
+        }, function() {
+            $('#top-graph-legend').slideUp();
+        })
     });
 });

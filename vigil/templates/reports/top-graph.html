@@ -1,10 +1,11 @@
 <script>
     var ajaxUrls = {
-        burns: "{{ url_for('ajax_burns', date=day_raw) }}"
+        top_graph: "{{ url_for('ajax_top_graph', date=day_raw) }}"
     };
 </script>
 <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/Chart.Scatter.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
 
-<canvas id="burns" width="400" height="100"></canvas>
+<canvas id="top-graph" width="400" height="100"></canvas>
+<div id="top-graph-legend" style="display:none"></div>

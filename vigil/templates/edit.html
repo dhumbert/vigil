@@ -5,7 +5,7 @@
     <form method="post" class="form-horizontal">
         {% include "messages.html" %}
 
-        <h1 class="text-center">Questions for {{ day.strftime("%A %d %b %Y") }}</h1>
+        <h1 class="text-center edit">{{ day.strftime("%A %d %b %Y") }}</h1>
         {% if user_answers %}
             <div class="alert alert-info"><strong>Psst...</strong> You have already saved answers for this day.</div>
         {% endif %}

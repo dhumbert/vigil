@@ -1,4 +1,5 @@
 from flask.ext.sqlalchemy import SessionBase
+import hashlib
 from sqlalchemy import or_, and_, desc, asc
 import time
 
@@ -24,6 +25,10 @@ class QuestionGroup(db.Model):
     def ordered_questions(self):
         return SessionBase.object_session(self).query(Question).with_parent(self).order_by(Question.order).all()
 
+    @property
+    def belongs_to_specific_user(self):
+        return self.user_id is not None
+
 
 class Question(db.Model):
     __tablename__ = 'questions'
@@ -31,6 +36,7 @@ class Question(db.Model):
     question_group_id = db.Column(db.Integer, db.ForeignKey('question_groups.id'))
     prompt = db.Column(db.String)
     active = db.Column(db.Boolean)
+    positive = db.Column(db.Boolean)
     order = db.Column(db.Integer)
 
     answers = db.relationship('Answer')
@@ -79,7 +85,7 @@ class UserAnswer(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), primary_key=True)
     question_answer_id = db.Column(db.Integer, db.ForeignKey('question_answers.id'))
-    date = db.Column(db.DateTime)
+    date = db.Column(db.DateTime, primary_key=True)
 
     user = db.relationship('User', backref=db.backref('answers'))
     question = db.relationship('Question')
@@ -132,6 +138,13 @@ def get_users_question_groups(user):
     return QuestionGroup.query.filter(group_filter).order_by(QuestionGroup.order).all()
 
 
+def get_only_users_question_groups(user):
+    """
+    Return ONLY a user's question groups, not including those available to all users.
+    """
+    return QuestionGroup.query.filter(QuestionGroup.user_id == user.id).order_by(QuestionGroup.order).all()
+
+
 def save_answers(user, date, answers):
     # delete existing
     UserAnswer.query.filter_by(date=date, user_id=user.id).delete()
@@ -149,7 +162,7 @@ def save_answers(user, date, answers):
     save_burns_score(user, date)
 
 
-def get_answers(user, day_datetime):
+def get_answers_dict(user, day_datetime):
     answers = UserAnswer.query.filter_by(date=day_datetime, user_id=user.id)
 
     return {a.question_id: a for a in answers}
@@ -188,3 +201,48 @@ def save_burns_score(user, date):
     db.session.add(user_score)
 
     db.session.commit()
+
+
+def get_top_graph(user, date):
+    report = {}
+    report['burns'] = get_all_burns_scores(user, date)
+
+    user_answers = UserAnswer.query.filter_by(user_id=user.id).order_by(UserAnswer.date).all()
+    other_trends = {}
+
+    for answer in user_answers:
+        if answer.question.group.belongs_to_specific_user:
+            group_name = answer.question.group.name
+            ts = int(time.mktime(answer.date.timetuple())) * 1000
+            if group_name not in other_trends:
+                other_trends[group_name] = {}
+
+            if ts not in other_trends[group_name]:
+                other_trends[group_name][ts] = 0
+
+            if answer.answer.value == 1:
+                positive = answer.question.positive
+                if positive == True:
+                    other_trends[group_name][ts] += 1
+                elif positive == False:
+                    other_trends[group_name][ts] -= 1
+
+    report['other'] = {}
+    for g, ds in other_trends.iteritems():
+        # figure out color by hashing label and converting to RGB
+        h = int(hashlib.sha1(g).hexdigest(), 16) % (10 ** 8)
+
+        red = (h & 0xFF0000) >> 16
+        green = (h & 0x00FF00) >> 8
+        blue = h & 0x0000FF
+
+        report['other'][g] = {}
+        report['other'][g]['data'] = []
+        report['other'][g]['color'] = {'red': red, 'green': green, 'blue': blue}
+        for d in sorted(ds):
+            val = {'y': ds[d], 'x': d}
+            if d == int(time.mktime(date.date().timetuple())) * 1000:
+                val['r'] = 1.5  # make this date bigger
+            report['other'][g]['data'].append(val)
+
+    return report

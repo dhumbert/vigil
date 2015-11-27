@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1 class="text-center">Edit Questions</h1>
+
+    <form method="post" class="form-horizontal">
+        {% for group in groups %}
+            <fieldset>
+                <legend>{{ group.name }}</legend>
+
+                {% for question in group.questions %}
+                    <div class="form-group">
+                        <label for="question_{{ question.id }}" class="col-sm-6 control-label">{{ question.prompt }}</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="active" value="{{ question.id }}" {% if question.active %}checked="checked"{% endif %}> Active
+                            </label>
+
+                            <select>
+                                <option>neutral</option>
+                                <option {% if question.positive == True %}selected="selected"{% endif %}>positive</option>
+                                <option {% if question.positive == False %}selected="selected"{% endif %}>negative</option>
+                            </select>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="form-group">
+                    <input type="text"/>
+                    <div class="col-sm-6">
+                        
+                    </div>
+                </div>
+
+            </fieldset>
+        {% endfor %}
+    </form>
+
+{% endblock %}

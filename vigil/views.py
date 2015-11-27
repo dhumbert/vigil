@@ -22,7 +22,7 @@ def day_view(day):
         flash('success', 'Saved!')
         return redirect(url_for('day_view', day=day))
 
-    user_answers = model.get_answers(current_user, day_datetime)
+    user_answers = model.get_answers_dict(current_user, day_datetime)
     burns_score = model.get_burns_score(current_user, day_datetime)
     groups = model.get_users_question_groups(current_user)
     prev_day, next_day = utils.bracketing_days(day_datetime)
@@ -38,17 +38,25 @@ def day_view(day):
                            prev_day=prev_day, next_day=next_day)
 
 
-@app.route("/ajax/burns")
+@app.route("/edit-questions")
+@login_required
+def edit_questions():
+    groups = model.get_only_users_question_groups(current_user)
+
+    return render_template('edit_questions.html', groups=groups)
+
+
+@app.route("/ajax/top-graph")
 @login_required
 @content_type("application/json")
-def ajax_burns():
+def ajax_top_graph():
     current_date = request.args.get('date', None)
     if current_date:
         current_date_datetime = datetime.strptime(current_date, app.config['DATE_FORMAT'])
     else:
         current_date_datetime = datetime.now()
 
-    return json.dumps(model.get_all_burns_scores(current_user, current_date_datetime))
+    return json.dumps(model.get_top_graph(current_user, current_date_datetime))
 
 
 @app.route("/login", methods=['GET', 'POST'])

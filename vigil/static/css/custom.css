@@ -6,6 +6,11 @@ body {
 h1 {
   color: #aaa;
   font-size: 2em;
+  margin-top: 0;
+}
+
+h1.edit {
+  margin-top: 1em;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
@@ -80,4 +85,18 @@ h1 {
   .jumbotron {
     border-bottom: 0;
   }
+}
+
+#top-graph-legend li{
+  display: inline;
+  color: #ccc;
+  text-transform: lowercase;
+  margin-right: 1em;
+}
+
+.scatterwithlines-legend-marker {
+  height: 1em;
+  width: 1em;
+  display: inline-block;
+  margin-right: 0.5em;
 }
