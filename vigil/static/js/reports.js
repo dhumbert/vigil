@@ -113,7 +113,7 @@ $(document).ready(function(){
                             var unitX = thisPointX - lastPointX;
                             var middle = (thisPointX + lastPointX) / 2;
                             this.chart.ctx.fillStyle = 'rgba(175,175,175,0.1)';
-                            this.chart.ctx.fillRect(middle, 0, unitX * 2, this.scale.yScaleRange.max * this.scale.yScaleRange.stepValue);
+                            this.chart.ctx.fillRect(middle, 0, unitX * 2, this.chart.height);
                         }
                     }
 
