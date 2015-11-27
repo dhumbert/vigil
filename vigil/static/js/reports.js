@@ -55,14 +55,15 @@ $(document).ready(function(){
             draw: function () {
                 Chart.types.Scatter.prototype.draw.apply(this, arguments);
 
-                var point = this.datasets[0].points[0];//[this.options.lineAtIndex];
+                //var point = this.datasets[0].points[0];//[this.options.lineAtIndex];
                 //console.log(point);
-                var scale = this.scale;
+                //var scale = this.scale;
 
                 //var unitY = this.datasets[0].points[1].y - this.datasets[0].points[0].y;
                 //console.log(unitY);
                 //var yTop = this.scale.startPoint;
                 //var yHeight = this.scale.endPoint - this.scale.startPoint;
+                console.log(this.scale);
                 var xStart = this.datasets[0].points[0].x;
                 var xEnd = this.chart.width;
                 //var yUnit = this.scale.yScaleRange.stepValue;
@@ -93,6 +94,30 @@ $(document).ready(function(){
                 // this.chart.ctx.fillStyle = 'rgba(0,255,0,1)';
                 //this.chart.ctx.textAlign = 'center';
                 //this.chart.ctx.fillText("TODAY", this.datasets[0].points[0].x, (yMax - goodThreshold) * yUnit);
+
+                // let's change the background for weekends, that will be interesting...
+                for (var i = 0; i < this.datasets[0].points.length; i++) {
+                    var point = this.datasets[0].points[i];
+                    var d = new Date(point.arg); // point.arg = timestamp
+                    var day = d.getDay();
+
+                    if (i == 0) { // if at first point
+                        if (day == 0 || day == 6) { // chart starts on weekend
+                            // TODO
+                        }
+                    } else {
+                        var thisPointX = point.x;
+
+                        if (day == 6) { // saturday, start the weekend!
+                            var lastPointX = this.datasets[0].points[i-1].x;
+                            var unitX = thisPointX - lastPointX;
+                            var middle = (thisPointX + lastPointX) / 2;
+                            this.chart.ctx.fillStyle = 'rgba(175,175,175,0.1)';
+                            this.chart.ctx.fillRect(middle, 0, unitX * 2, this.scale.yScaleRange.max * this.scale.yScaleRange.stepValue);
+                        }
+                    }
+
+                }
             }
         });
 
